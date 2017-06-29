@@ -1,0 +1,147 @@
+#alustukset
+#tarvitsee hinta datan toimiakseen
+Price=Price_data_daily[,8]
+Price=Price_data_daily_2012_2017_06_28[,8]
+
+for (i in 1:2095){
+  Price.double[i]=as.double(Price[i,1])
+}
+
+Price.derivate=double(2095)
+
+DISCOUNT=0.995
+BUY_PARAMETER=120
+SELL_PARAMETER=120
+buy.btc=0
+sell.btc=0
+
+
+portfolio=matrix(0,2095,5)
+
+for (i in 1:100){  #init portfolio
+  portfolio[i,1]=1                    #btc in portfolio, init to 1
+  portfolio[i,2]=Price.double[1]  #$ in portfolio init to 120
+  portfolio[i,3]=Price.double[1]+1   #portfolio value in btc
+  portfolio[i,4]=Price.double[i]+Price.double[1]    #portfolio value in $
+  portfolio[i,5]=Price.double[i]
+}
+
+
+for (i in 2:2095){
+  Price.derivate[i-1]=Price.double[i]-Price.double[i-1]
+}
+
+
+
+#älykkyys
+for (t in 20:2095){
+  if (Price.derivate[t]*Price.derivate[t-1]<0){
+    price.end=Price.double[t]
+    i=1
+    while (Price.derivate[t-i]*Price.derivate[t-1-i]>0){
+      i=i+1
+    }
+      price.start=Price.double[t-i]
+      suhde=price.end/price.start
+    if (suhde>1.02 || suhde<0.98){
+      if (suhde<1){
+        buy.btc=min(1,-log(suhde^BUY_PARAMETER))*portfolio[t-1,2]/Price.double[t]
+      }
+      if (suhde>1){
+        sell.btc=min(1,log(suhde^SELL_PARAMETER))*portfolio[t-1,1]
+        }
+    }
+  }
+  #update portfolio
+  portfolio[t,1]=portfolio[t-1,1]+buy.btc*DISCOUNT-sell.btc
+  portfolio[t,2]=portfolio[t-1,2]+(sell.btc*DISCOUNT-buy.btc)*Price.double[t]
+  portfolio[t,3]=portfolio[t,1]+portfolio[t,2]/Price.double[t]
+  portfolio[t,4]=portfolio[t,1]*Price.double[t]+portfolio[t,2]
+  portfolio[t,5]=Price.double[t]
+  buy.btc=0
+  sell.btc=0
+  suhde=0
+}
+
+
+
+
+plot(portfolio[,1],xlim=c(0,2095),type='l',ylab='Portfolio value (btc)',xlab='Time (days)',main='2011-2017 \n Amount of Bitcoin in portfolio')
+plot(portfolio[,2],xlim=c(0,2095))
+plot(portfolio[,3],xlim=c(0,2100),type='l',ylab='Portfolio value (btc)',xlab='Time (days)',main='Performance from 2011 to 2017 \n +4530% in Portfolio Bitcoin value')
+plot(portfolio[,4],xlim=c(0,2095),type='l',ylab='Portfolio value ($)',xlab='Time (days)',main='Performance from 2011 to 2017 \n +6816700% in Portfolio Dollar value')
+plot(portfolio[,5],xlim=c(0,2095),type='l',ylab='Price ($/btc)',xlab='Time (days)',main='Price from 2011 to 2017 \n +42300% in Price')
+
+#stats
+
+portfolio[2095,3]/portfolio[1,3]
+#46.29 * bitcoins owned  
+portfolio[2095,4]/portfolio[1,4]
+#68168 * the value in dollars
+portfolio[2095,5]/portfolio[1,5]
+#424.9 *times in the price
+
+
+
+
+plot(as.double(Price[]),ylim=(c(0,1400)),xlim=c(0,length(Price)),type='l')
+
+
+
+
+
+
+
+
+
+
+
+
+plot(Price.derivate/as.double(Price),type='l')
+mean(Price.derivate[1:1350]/as.double(Price[1:1350]))
+
+test=matrix(0,1,1500)
+
+
+
+
+#plots for images
+  #2011 hike
+plot(portfolio[,1],xlim=c(400,650),ylim=c(0,max(portfolio[400:650,1])),type='l',ylab='Portfolio value (btc)',xlab='Time (days)',main='2011 Price hike \n Amount of Bitcoin in portfolio')
+plot(portfolio[,3],xlim=c(400,650),ylim=c(0,max(portfolio[400:650,3])),type='l',ylab='Portfolio value (btc)',xlab='Time (days)',main='2011 Price hike \n +34%  in Portfolio Bitcoin value')
+plot(portfolio[,4],xlim=c(400,650),ylim=c(0,max(portfolio[400:650,4])),type='l',ylab='Portfolio value ($)',xlab='Time (days)',main='2011 Price hike \n +1003% in Portfolio Dollar value')
+plot(portfolio[,5],xlim=c(400,650),ylim=c(0,max(portfolio[400:650,5])),type='l',ylab='Price ($/btc)',xlab='Time (days)',main='2011 Price hike \n +717% increase in Price')
+
+#Stats
+  max(portfolio[400:650,3])/min(portfolio[400:650,3])
+  max(portfolio[400:650,4])/min(portfolio[400:650,4])
+  max(portfolio[400:650,5])/min(portfolio[400:650,5])
+  
+  portfolio[650,3]/portfolio[400,3]
+  #1.349 +68% in bitcoins owned  
+  portfolio[650,4]/portfolio[400,4]
+  #11.02 * the value in dollars
+  portfolio[650,5]/portfolio[400,5]
+  #8.17 *times in the price
+  
+
+#2013 hike
+  plot(portfolio[,1],xlim=c(650,900),ylim=c(0,max(portfolio[650:900,1])),type='l',ylab='Portfolio value (btc)',xlab='Time (days)',main='2013 Price hike \n Amount of Bitcoin in portfolio')
+  plot(portfolio[,3],xlim=c(650,900),ylim=c(0,max(portfolio[650:900,3])),type='l',ylab='Portfolio value (btc)',xlab='Time (days)',main='2013 Price hike \n +289% in Portfolio Bitcoin value')
+  plot(portfolio[,4],xlim=c(650,900),ylim=c(0,max(portfolio[650:900,4])),type='l',ylab='Portfolio value ($)',xlab='Time (days)',main='2013 Price hike \n +2654% in Portfolio Dollar value')
+  plot(portfolio[,5],xlim=c(650,900),ylim=c(0,max(portfolio[650:900,5])),type='l',ylab='Price ($/btc)',xlab='Time (days)',main='2013 Price hike \n +608% increase in Price')
+  
+  #Stats
+  max(portfolio[650:900,3])/min(portfolio[650:900,3])
+  max(portfolio[650:900,4])/min(portfolio[650:900,4])
+  max(portfolio[650:900,5])/min(portfolio[650:900,5])
+  
+  portfolio[900,3]/portfolio[650,3]
+  #3.89 * bitcoins owned  
+  portfolio[900,4]/portfolio[650,4]
+  #27.54 * the value in dollars
+  portfolio[900,5]/portfolio[650,5]
+  #7.079 *times in the price
+  
+  
+
